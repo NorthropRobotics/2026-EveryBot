@@ -39,7 +39,14 @@ public class RobotContainer {
 
     public RobotContainer() {
         configureBindings();
-        CameraServer.startAutomaticCapture();
+        UsbCamera cam0 = CameraServer.startAutomaticCapture();
+        UsbCamera cam1 = CameraServer.startAutomaticCapture();
+
+        cam0.setResolution(320,240);
+        cam0.setFPS(15);
+        cam1.setResolution(320,240);
+        cam1.setFPS(15);
+        
     }
 
     private void configureBindings() {
