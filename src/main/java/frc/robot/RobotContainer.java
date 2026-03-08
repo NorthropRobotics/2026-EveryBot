@@ -11,6 +11,8 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.UsbCamera;
+import edu.wpi.first.cscore.VideoMode;
+import edu.wpi.first.util.PixelFormat;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -40,13 +42,11 @@ public class RobotContainer {
 
     public RobotContainer() {
         configureBindings();
-        UsbCamera cam0 = CameraServer.startAutomaticCapture();
-        UsbCamera cam1 = CameraServer.startAutomaticCapture();
+        UsbCamera cam0 = CameraServer.startAutomaticCapture(0);
+        UsbCamera cam1 = CameraServer.startAutomaticCapture(1);
 
-        cam0.setResolution(320,240);
-        cam0.setFPS(15);
-        cam1.setResolution(320,240);
-        cam1.setFPS(15);
+        cam0.setVideoMode(PixelFormat.kMJPEG, 320, 240, 15);
+        cam1.setVideoMode(PixelFormat.kMJPEG, 320, 240, 15);
         
     }
 
