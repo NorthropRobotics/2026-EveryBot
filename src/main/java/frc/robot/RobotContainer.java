@@ -5,19 +5,32 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
+import static frc.robot.Constants.OperatorConstants.*;
+
+import choreo.auto.AutoFactory;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 
+import frc.robot.commands.ClimbDown;
+import frc.robot.commands.ClimbUp;
+import frc.robot.commands.Eject;
+import frc.robot.commands.Intake;
+import frc.robot.commands.LaunchSequence;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.CANFuelSubsystem;
+import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class RobotContainer {
@@ -33,20 +46,43 @@ public class RobotContainer {
 
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
-    private final CommandXboxController joystick = new CommandXboxController(0);
+    private final CommandXboxController joystick = new CommandXboxController(DRIVER_CONTROLLER_PORT);
+    private final CommandXboxController operatorController = new CommandXboxController(OPERATOR_CONTROLLER_PORT);
 
+    // README: Subsystems
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+    private final CANFuelSubsystem fuelSubsystem = new CANFuelSubsystem();
+    private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+
+    // README: Autonomous
+    private final SendableChooser<Command> autoChooser = new SendableChooser<>();
 
     public RobotContainer() {
         configureBindings();
+
+        // README: Autonomous
+        var choreoFactory = new AutoFactory(
+            drivetrain::getPose,
+            drivetrain::resetPose,
+            drivetrain::followTrajectory,
+            true,
+            drivetrain
+        );
+
+        Command shootAndDrive = choreoFactory.trajectoryCmd("ShootAndDrive")
+            .beforeStarting(new LaunchSequence(fuelSubsystem));
+
+        autoChooser.setDefaultOption("Shoot and Drive", shootAndDrive);
+        SmartDashboard.putData("Auto Chooser", autoChooser);
+
+        // README: Telemetry & Cameras
         UsbCamera cam0 = CameraServer.startAutomaticCapture();
         UsbCamera cam1 = CameraServer.startAutomaticCapture();
 
-        cam0.setResolution(320,240);
+        cam0.setResolution(320, 240);
         cam0.setFPS(15);
-        cam1.setResolution(320,240);
+        cam1.setResolution(320, 240);
         cam1.setFPS(15);
-        
     }
 
     private void configureBindings() {
@@ -68,6 +104,7 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
 
+        // README: Controller Bindings > Driver Controller
         joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
         joystick.b().whileTrue(drivetrain.applyRequest(() ->
             point.withModuleDirection(new Rotation2d(-joystick.getLeftY(), -joystick.getLeftX()))
@@ -85,25 +122,19 @@ public class RobotContainer {
 
         drivetrain.registerTelemetry(logger::telemeterize);
 
-        
+        // Fuel and climber subsystem default commands — stop motors when no button held
+        fuelSubsystem.setDefaultCommand(fuelSubsystem.run(() -> fuelSubsystem.stop()));
+        climberSubsystem.setDefaultCommand(climberSubsystem.run(() -> climberSubsystem.stop()));
+
+        // README: Controller Bindings > Operator Controller
+        operatorController.leftBumper().whileTrue(new Intake(fuelSubsystem));
+        operatorController.rightBumper().whileTrue(new LaunchSequence(fuelSubsystem));
+        operatorController.a().whileTrue(new Eject(fuelSubsystem));
+        operatorController.povUp().whileTrue(new ClimbUp(climberSubsystem));
+        operatorController.povDown().whileTrue(new ClimbDown(climberSubsystem));
     }
 
     public Command getAutonomousCommand() {
-        // Simple drive forward auton
-        final var idle = new SwerveRequest.Idle();
-        return Commands.sequence(
-            // Reset our field centric heading to match the robot
-            // facing away from our alliance station wall (0 deg).
-            drivetrain.runOnce(() -> drivetrain.seedFieldCentric(Rotation2d.kZero)),
-            // Then slowly drive forward (away from us) for 5 seconds.
-            drivetrain.applyRequest(() ->
-                drive.withVelocityX(0.5)
-                    .withVelocityY(0)
-                    .withRotationalRate(0)
-            )
-            .withTimeout(5.0),
-            // Finally idle for the rest of auton
-            drivetrain.applyRequest(() -> idle)
-        );
+        return autoChooser.getSelected();
     }
 }

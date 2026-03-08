@@ -5,6 +5,8 @@ import static edu.wpi.first.units.Units.*;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import choreo.trajectory.SwerveSample;
+
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
@@ -12,8 +14,10 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -37,6 +41,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private static final double kSimLoopPeriod = 0.004; // 4 ms
     private Notifier m_simNotifier = null;
     private double m_lastSimTime;
+
+    /* Choreo path-following PID controllers and request */
+    private final SwerveRequest.ApplyRobotSpeeds m_choreoRequest = new SwerveRequest.ApplyRobotSpeeds();
+    private final PIDController m_choreoX = new PIDController(10, 0, 0);
+    private final PIDController m_choreoY = new PIDController(10, 0, 0);
+    private final PIDController m_choreoTheta = new PIDController(7, 0, 0);
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
     private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -186,6 +196,31 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (Utils.isSimulation()) {
             startSimThread();
         }
+    }
+
+    /** Returns the current estimated pose of the drivetrain. */
+    // README: Subsystems > CommandSwerveDrivetrain
+    public Pose2d getPose() {
+        return getState().Pose;
+    }
+
+    /**
+     * Follows a Choreo {@link SwerveSample} using feedforward chassis speeds
+     * plus a closed-loop PID correction on pose error.
+     *
+     * @param sample The trajectory sample to follow
+     */
+    // README: Subsystems > CommandSwerveDrivetrain | Autonomous
+    public void followTrajectory(SwerveSample sample) {
+        m_choreoTheta.enableContinuousInput(-Math.PI, Math.PI);
+        Pose2d pose = getPose();
+        ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+            sample.vx + m_choreoX.calculate(pose.getX(), sample.x),
+            sample.vy + m_choreoY.calculate(pose.getY(), sample.y),
+            sample.omega + m_choreoTheta.calculate(pose.getRotation().getRadians(), sample.heading),
+            pose.getRotation()
+        );
+        setControl(m_choreoRequest.withSpeeds(speeds));
     }
 
     /**

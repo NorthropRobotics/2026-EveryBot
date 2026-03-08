@@ -51,9 +51,20 @@ copilot-instructions.md
 - Add descriptive comments and emojis sparingly for clarity
 
 ### Documentation Standards
+- **`README.md` is the single source of truth**: Every code change that affects subsystems, commands, controller bindings, autonomous behavior, constants, or vendor dependencies **must** be reflected in `README.md` as part of the same change — never defer it.
 - Keep documentation DRY (Don't Repeat Yourself) - reference other docs instead of duplicating
 - Use clear cross-references between related documentation files
 - Update the main architecture document when workflow structure changes
+
+#### `// README: <Section>` convention
+Source files use inline comments to mark exactly which README section must be updated when that code changes:
+```java
+// README: Subsystems > CANFuelSubsystem
+// README: Controller Bindings > Operator Controller
+// README: Autonomous
+// README: Vendor Libraries
+```
+When you touch a line annotated with `// README: ...`, update that section in `README.md` in the same commit.
 
 ## Working with GitHub Actions Workflows
 
@@ -80,4 +91,5 @@ copilot-instructions.md
 - [ ] **Naming**: Self-documenting function/variable names?
 - [ ] **Size**: Functions small and focused?
 - [ ] **Dead Code**: Removed or archived appropriately?
+- [ ] **README**: `README.md` updated to reflect any changes to subsystems, commands, bindings, auto, constants, or deps?
 - [ ] **Test**: Run tests

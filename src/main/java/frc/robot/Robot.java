@@ -4,30 +4,40 @@
 
 package frc.robot;
 
-import com.ctre.phoenix6.HootAutoReplay;
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
+import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
-import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
-public class Robot extends TimedRobot {
+// README: Subsystems > AdvantageKit Logging
+public class Robot extends LoggedRobot {
     private Command m_autonomousCommand;
 
     private final RobotContainer m_robotContainer;
 
-    /* log and replay timestamp and joystick data */
-    private final HootAutoReplay m_timeAndJoystickReplay = new HootAutoReplay()
-        .withTimestampReplay()
-        .withJoystickReplay();
-
     public Robot() {
+        // Configure AdvantageKit logger
+        Logger.recordMetadata("ProjectName", "10434-Northrop-Cybears");
+
+        if (isReal()) {
+            Logger.addDataReceiver(new WPILOGWriter()); // Log to USB stick
+            Logger.addDataReceiver(new NT4Publisher()); // Publish to NetworkTables
+        } else {
+            Logger.addDataReceiver(new WPILOGWriter());
+            Logger.addDataReceiver(new NT4Publisher());
+        }
+
+        Logger.start();
+
         m_robotContainer = new RobotContainer();
     }
 
     @Override
     public void robotPeriodic() {
-        m_timeAndJoystickReplay.update();
-        CommandScheduler.getInstance().run(); 
+        CommandScheduler.getInstance().run();
     }
 
     @Override

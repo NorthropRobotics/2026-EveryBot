@@ -23,6 +23,7 @@ import com.revrobotics.spark.config.SparkFlexConfig;
  */
 public final class Constants {
 
+  // README: Subsystems > CANFuelSubsystem | Configuration & Tuning > FuelConstants
   public static final class FuelConstants {
     // Motor controller IDs for Fuel Mechanism motors
     public static final int LEFT_INTAKE_LAUNCHER_MOTOR_ID = 16;
@@ -67,6 +68,7 @@ public final class Constants {
 
   }
 
+  // README: Subsystems > ClimberSubsystem | Configuration & Tuning > ClimbConstatns
   public static final class ClimbConstatns {
     // Motor controller IDs for Climb motor
     public static final int CLIMBER_MOTOR_ID = 14;
@@ -78,6 +80,7 @@ public final class Constants {
     public static final double CLIMBER_MOTOR_UP_PERCENT = 0.8;
   }
 
+  // README: Controller Bindings | Configuration & Tuning > OperatorConstants
   public static final class OperatorConstants {
 
     // Port constants for driver and operator controllers. These should match the

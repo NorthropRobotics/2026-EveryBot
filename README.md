@@ -68,6 +68,8 @@ Field-centric swerve drive built on the CTRE Phoenix 6 `SwerveDrivetrain` base c
 - **Max speed:** Configured as a fraction of `TunerConstants.kSpeedAt12Volts` (currently 100%)
 - **Max angular rate:** 0.75 rotations/second (~4.71 rad/s)
 - Supports SysId characterization routines (dynamic & quasistatic, forward & reverse)
+- **`getPose()`** — returns the current estimated `Pose2d` from the odometer
+- **`followTrajectory(SwerveSample)`** — Choreo path-following callback; applies feedforward chassis speeds from the trajectory sample plus a closed-loop PID correction on pose error (kP=10 translation, kP=7 rotation)
 
 ### `CANFuelSubsystem`
 Controls the fuel (game piece) intake and launching mechanism.
@@ -128,19 +130,55 @@ Controls the end-game climber using a single **REV SparkMax** driving a brushed 
 | Start + Y | SysId quasistatic — forward |
 | Start + X | SysId quasistatic — reverse |
 
-> **Note:** Driver and operator controller ports are defined in `Constants.OperatorConstants`. A second controller (port 1) is defined as the operator controller but bindings for it are not yet assigned in `RobotContainer`.
+### Operator Controller (Port 1 — Xbox)
+
+| Button | Action |
+|---|---|
+| **Left bumper** (hold) | `Intake` — run intake and indexer inward |
+| **Right bumper** (hold) | `LaunchSequence` — spin up then fire |
+| **A** (hold) | `Eject` — reverse intake to expel game piece |
+| **D-pad Up** (hold) | `ClimbUp` — drive climber upward |
+| **D-pad Down** (hold) | `ClimbDown` — drive climber downward |
+
+Both `CANFuelSubsystem` and `ClimberSubsystem` have **default commands** that call `stop()` when no button is held, ensuring motors are off at idle.
+
+Controller port constants are defined in `Constants.OperatorConstants`.
 
 ---
 
 ## Autonomous
 
-A simple **drive forward** autonomous routine is implemented in `RobotContainer.getAutonomousCommand()`:
+Autonomous is driven by **ChoreoLib** via a `SendableChooser` registered on SmartDashboard as **`Auto Chooser`**.
 
-1. Reset field-centric heading to 0° (facing away from alliance wall)
-2. Drive forward at 0.5 m/s for **5 seconds**
-3. Idle for the remainder of the autonomous period
+### How it works
 
-PathPlanner is included as a vendor dependency and can be used for more complex paths in the future.
+`RobotContainer` constructs a `choreo.auto.AutoFactory` wired to the drivetrain:
+
+```java
+var choreoFactory = new AutoFactory(
+    drivetrain::getPose,
+    drivetrain::resetPose,
+    drivetrain::followTrajectory,
+    true,          // alliance flip enabled
+    drivetrain
+);
+```
+
+`followTrajectory` applies each `SwerveSample`'s feedforward speeds plus PID correction (implemented in `CommandSwerveDrivetrain`).
+
+### Default auto — Shoot and Drive
+
+1. **`LaunchSequence`** fires before the path starts (spin up → launch)
+2. **`ShootAndDrive`** Choreo trajectory runs the robot along the planned path
+
+Trajectory files are stored in `src/main/deploy/choreo/` and deployed automatically with `./gradlew deploy`.
+
+### Adding more autos
+
+1. Design a trajectory in the **Choreo** desktop app and save it to `src/main/deploy/choreo/`
+2. In `RobotContainer`, build a new `Command` via `choreoFactory.trajectoryCmd("YourTrajectoryName")`
+3. Register it: `autoChooser.addOption("My Auto", myAutoCommand)`
+4. Select it in Shuffleboard's **Auto Chooser** dropdown before the match
 
 ---
 
@@ -191,9 +229,10 @@ Swerve module PID gains, feedforward gains, CAN IDs, wheel offsets, and kinemati
 |---|---|
 | CTRE Phoenix 6 v26.1.1 | `vendordeps/Phoenix6-26.1.1.json` |
 | REVLib | `vendordeps/REVLib.json` |
+| ChoreoLib 2026.0.2 | `vendordeps/ChoreoLib.json` |
 | PathPlannerLib 2026.1.2 | `vendordeps/PathplannerLib-2026.1.2.json` |
 | AdvantageKit | `vendordeps/AdvantageKit.json` |
-| WPILib New Commands | `vendordeps/WPILibNewCommands.json` |
+| WPILib New Commands | `vendordeps/WPILibNewCommands.json` |}
 
 ---
 
