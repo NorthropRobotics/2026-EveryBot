@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.commands.Launch;
 
 import static frc.robot.Constants.FuelConstants.*;
 
@@ -85,7 +86,7 @@ public class CANFuelSubsystem extends SubsystemBase {
 
   // A method to set the voltage of the intake roller
   public void setFeederRoller(double power) {
-    Indexer.set(power); // positive for shooting
+    Indexer.set(power); // positive for shooting (Launch.adjustedSpeed *)
   }
 
   // A method to stop the rollers

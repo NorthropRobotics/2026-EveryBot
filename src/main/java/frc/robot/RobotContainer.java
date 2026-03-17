@@ -4,16 +4,16 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.*;
-import static frc.robot.Constants.OperatorConstants.*;
-
-import choreo.auto.AutoFactory;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static frc.robot.Constants.OperatorConstants.DRIVER_CONTROLLER_PORT;
+import static frc.robot.Constants.OperatorConstants.OPERATOR_CONTROLLER_PORT;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
-import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.cscore.UsbCamera;
+import choreo.auto.AutoFactory;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -22,23 +22,26 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-
 import frc.robot.commands.ClimbDown;
 import frc.robot.commands.ClimbUp;
 import frc.robot.commands.Eject;
 import frc.robot.commands.Intake;
+import frc.robot.commands.Launch;
 import frc.robot.commands.LaunchSequence;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CANFuelSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
-
 public class RobotContainer {
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
     /* Setting up bindings for necessary control of the swerve drive platform */
-    private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
+    // private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
+    //         .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
+    //         .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
+            //A Robot Centric Option for Alfy Testing 
+        private final SwerveRequest.RobotCentric drive = new SwerveRequest.RobotCentric()
             .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
@@ -76,13 +79,13 @@ public class RobotContainer {
         SmartDashboard.putData("Auto Chooser", autoChooser);
 
         // README: Telemetry & Cameras
-        UsbCamera cam0 = CameraServer.startAutomaticCapture();
-        UsbCamera cam1 = CameraServer.startAutomaticCapture();
-
-        cam0.setResolution(320, 240);
-        cam0.setFPS(15);
-        cam1.setResolution(320, 240);
-        cam1.setFPS(15);
+        // UsbCamera cam0 = CameraServer.startAutomaticCapture();
+        // UsbCamera cam1 = CameraServer.startAutomaticCapture();
+        
+        // cam0.setResolution(320, 240);
+        // cam0.setFPS(15);
+        // cam1.setResolution(320, 240);
+        // cam1.setFPS(15);
     }
 
     private void configureBindings() {
@@ -123,6 +126,10 @@ public class RobotContainer {
         joystick.y().whileTrue(new Intake(fuelSubsystem));
         joystick.rightBumper().whileTrue(new LaunchSequence(fuelSubsystem));
         joystick.x().whileTrue(new Eject(fuelSubsystem));
+        joystick.povLeft().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = 0.2));
+        joystick.povUp().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = .75));
+        joystick.povDown().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = 0.5));
+        joystick.povRight().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = 1.0));
         drivetrain.registerTelemetry(logger::telemeterize);
 
         // Fuel and climber subsystem default commands — stop motors when no button held

@@ -4,14 +4,18 @@
 
 package frc.robot.commands;
 
+import static frc.robot.Constants.FuelConstants.INDEXER_LAUNCHING_PERCENT;
+import static frc.robot.Constants.FuelConstants.LAUNCHING_LAUNCHER_PERCENT;
+
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CANFuelSubsystem;
-import static frc.robot.Constants.FuelConstants.*;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class Launch extends Command {
   /** Creates a new Intake. */
+
+  public static double adjustedSpeed = 1.0;
 
   CANFuelSubsystem fuelSubsystem;
 
@@ -19,14 +23,14 @@ public class Launch extends Command {
     addRequirements(fuelSystem);
     this.fuelSubsystem = fuelSystem;
   }
-
+  
   // Called when the command is initially scheduled. Set the rollers to the
   // appropriate values for intaking
   @Override
   public void initialize() {
     fuelSubsystem
         .setIntakeLauncherRoller(
-            SmartDashboard.getNumber("Launching launcher roller value", LAUNCHING_LAUNCHER_PERCENT));
+            adjustedSpeed * SmartDashboard.getNumber("Launching launcher roller value", LAUNCHING_LAUNCHER_PERCENT));
     fuelSubsystem.setFeederRoller(SmartDashboard.getNumber("Launching feeder roller value", INDEXER_LAUNCHING_PERCENT));
   }
 
