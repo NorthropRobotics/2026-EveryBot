@@ -119,7 +119,10 @@ public class RobotContainer {
 
         // Reset the field-centric heading on left bumper press.
         joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
-
+        //Options to have all controls on the driver contoller. Comment out if using two.
+        joystick.y().whileTrue(new Intake(fuelSubsystem));
+        joystick.rightBumper().whileTrue(new LaunchSequence(fuelSubsystem));
+        joystick.x().whileTrue(new Eject(fuelSubsystem));
         drivetrain.registerTelemetry(logger::telemeterize);
 
         // Fuel and climber subsystem default commands — stop motors when no button held
@@ -127,7 +130,7 @@ public class RobotContainer {
         climberSubsystem.setDefaultCommand(climberSubsystem.run(() -> climberSubsystem.stop()));
 
         // README: Controller Bindings > Operator Controller
-        operatorController.leftBumper().whileTrue(new Intake(fuelSubsystem));
+        operatorController.b().whileTrue(new Intake(fuelSubsystem));
         operatorController.rightBumper().whileTrue(new LaunchSequence(fuelSubsystem));
         operatorController.a().whileTrue(new Eject(fuelSubsystem));
         operatorController.povUp().whileTrue(new ClimbUp(climberSubsystem));
