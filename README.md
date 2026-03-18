@@ -212,7 +212,7 @@ Constants are centralized in `Constants.java` under inner classes:
 ### `FuelConstants`
 All intake/launcher motor IDs, current limits, and percent outputs. Motor values can be tuned live via SmartDashboard — once a good value is found, update the constant in this class.
 
-### `ClimbConstatns` *(note: typo in source)*
+### `ClimbConstants`
 Climber motor ID, current limit, and up/down power percentages.
 
 ### `OperatorConstants`

@@ -7,9 +7,6 @@ package frc.robot;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.revrobotics.spark.FeedbackSensor;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkFlexConfig;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -36,8 +33,8 @@ public final class Constants {
 
     // All values likely need to be tuned based on your robot
     public static final double INDEXER_INTAKING_PERCENT = -.5; 
-    public static final double INDEXER_LAUNCHING_PERCENT = 0.6;
-    public static final double INDEXER_SPIN_UP_PRE_LAUNCH_PERCENT = -0.5;
+    public static final double INDEXER_LAUNCHING_PERCENT = 0.4;
+    public static final double INDEXER_SPIN_UP_PRE_LAUNCH_PERCENT = -0.25;
 
     public static final double INTAKE_INTAKING_PERCENT = -0.5;
     public static final double LAUNCHING_LAUNCHER_PERCENT = -1.0;
@@ -68,8 +65,8 @@ public final class Constants {
 
   }
 
-  // README: Subsystems > ClimberSubsystem | Configuration & Tuning > ClimbConstatns
-  public static final class ClimbConstatns {
+  // README: Subsystems > ClimberSubsystem | Configuration & Tuning > ClimbConstants
+  public static final class ClimbConstants {
     // Motor controller IDs for Climb motor
     public static final int CLIMBER_MOTOR_ID = 14;
 

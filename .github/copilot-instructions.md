@@ -74,6 +74,67 @@ When you touch a line annotated with `// README: ...`, update that section in `R
 - **Simple workflows**: GitHub Actions should be thin wrappers around scripts, not contain complex logic
 - **Easy debugging**: When CI fails, developers can reproduce the issue locally by running the same script
 
+## FRC Robot Development Patterns
+
+### Command-Based Architecture
+- Every subsystem is a SubsystemBase with command interface
+- Commands are one-purpose actions bound to buttons/triggers
+- Default commands enforce motor safety (stop when not commanded)
+- Use SequentialCommandGroup for multi-step sequences (e.g., SpinUp → Launch)
+
+### Motor Configuration Pattern
+1. Define all config in Constants.java as static instances
+2. Apply at subsystem instantiation (TalonFX: .getConfigurator().apply(); SparkMax: .configure())
+3. Inversion defined at config time, never toggle in control logic
+4. Current limits tuned to prevent brownout while protecting motors
+
+### Autonomous (ChoreoLib)
+- Trajectories designed in Choreo desktop app, saved to src/main/deploy/choreo/
+- ChoreoLib auto-deploys files to RoboRIO
+- AutoFactory wired to drivetrain; followTrajectory applies feedforward + pose PID
+- Add new autos: choreoFactory.trajectoryCmd("Name") → autoChooser.addOption()
+
+### SmartDashboard Tuning Workflow
+1. Subsystems expose default constants to SmartDashboard on init
+2. Commands read live values from dashboard in initialize()
+3. After field testing, copy tuned values back to Constants.java
+4. Do not commit dashboard-only tunings; sync Constants.java instead
+
+### Console Control Access
+- Driver Controller (Port 0): Left/Right sticks + bumpers (drive + SysId)
+- Operator Controller (Port 1): Bumpers (fuel actions) + POV (climb/speed adjust)
+- Define all ports in OperatorConstants; use CommandXboxController for binding
+
+### Swerve-Specific Notes
+- TunerConstants.java is auto-generated; regenerate with Tuner X, never hand-edit
+- Open-loop voltage for joystick drive; PID only for Choreo path correction
+- Max speed: Configured as fraction of kSpeedAt12Volts (currently 100% = ~5.12 m/s)
+- Orientation: Field-centric default (can RobotCentric for testing)
+
+### Vendor Library Constraints
+- Phoenix 6: All configurations must match SwerveModuleConstants expectations
+- REVLib: SparkMax brushed motors require MotorType.kBrushed; coast/brake per use case
+- ChoreoLib: Always design paths in desktop app; do not hand-edit trajectory JSON
+- AdvantageKit: All periods logged; use Logger.recordMetadata() for session identification
+
+## Quick Reference — 2026-EveryBot Subsystem Integration
+
+### To Add a New Subsystem
+1. Create SubsystemBase in src/main/java/frc/robot/subsystems/
+2. Add motor/config constants to Constants.java inner class
+3. Create commands for each action in commands/
+4. Instantiate subsystem in RobotContainer; wire button bindings
+5. Update README.md subsystem table and controller bindings table
+6. Add // README: <Section> comments to mark docs sync points
+
+### Troubleshooting Checklist
+- [ ] Motor inverted unexpectedly? Check TalonFXConfiguration.MotorOutput.Inverted
+- [ ] Motor not stopping? Verify default command calls stop() in subsystem
+- [ ] Swerve drive jerky? Check odometry frequency; verify SwerveModuleConstants match TunerConstants
+- [ ] SmartDashboard values not applied? Commands must read in initialize(), not execute()
+- [ ] Deployment failed? Run ./gradlew build first; check team number in .wpilib/wpilib_preferences.json
+- [ ] Choreography path not deploying? Ensure src/main/deploy/choreo/ contains .traj file; rebuild and redeploy
+
 ## Quick Reference
 
 ### 🪶 All Changes should be considered for Pull Request Philosophy
