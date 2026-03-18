@@ -7,9 +7,6 @@ package frc.robot;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.revrobotics.spark.FeedbackSensor;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkFlexConfig;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -68,8 +65,8 @@ public final class Constants {
 
   }
 
-  // README: Subsystems > ClimberSubsystem | Configuration & Tuning > ClimbConstatns
-  public static final class ClimbConstatns {
+  // README: Subsystems > ClimberSubsystem | Configuration & Tuning > ClimbConstants
+  public static final class ClimbConstants {
     // Motor controller IDs for Climb motor
     public static final int CLIMBER_MOTOR_ID = 14;
 
@@ -78,7 +75,12 @@ public final class Constants {
     // Percentage to power the motor both up and down
     public static final double CLIMBER_MOTOR_DOWN_PERCENT = -0.8;
     public static final double CLIMBER_MOTOR_UP_PERCENT = 0.8;
-  }
+
+    public static final TalonFXConfiguration CLIMBER_CONFIG = new TalonFXConfiguration();
+    static {
+      CLIMBER_CONFIG.CurrentLimits.StatorCurrentLimit = CLIMBER_MOTOR_CURRENT_LIMIT;
+      CLIMBER_CONFIG.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    }
 
   // README: Controller Bindings | Configuration & Tuning > OperatorConstants
   public static final class OperatorConstants {

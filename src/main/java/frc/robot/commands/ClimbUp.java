@@ -1,15 +1,13 @@
 package frc.robot.commands;
 
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.subsystems.CANFuelSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 
-import static frc.robot.Constants.ClimbConstatns.*;
+import static frc.robot.Constants.ClimbConstants.*;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class ClimbUp extends Command {
-  /** Creates a new Climer. */
+  /** Creates a new Climber. */
 
   ClimberSubsystem climberSubsystem;
 
