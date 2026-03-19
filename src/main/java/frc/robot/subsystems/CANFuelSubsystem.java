@@ -4,24 +4,20 @@
 
 package frc.robot.subsystems;
 
-import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.revrobotics.spark.SparkClosedLoopController;
-import com.revrobotics.spark.SparkMax;
+import static frc.robot.Constants.FuelConstants.INDEXER_INTAKING_PERCENT;
+import static frc.robot.Constants.FuelConstants.INDEXER_LAUNCHING_PERCENT;
+import static frc.robot.Constants.FuelConstants.INDEXER_MOTOR_ID;
+import static frc.robot.Constants.FuelConstants.INTAKE_INTAKING_PERCENT;
+import static frc.robot.Constants.FuelConstants.LAUNCHING_LAUNCHER_PERCENT;
+import static frc.robot.Constants.FuelConstants.LEFT_INTAKE_LAUNCHER_MOTOR_ID;
+import static frc.robot.Constants.FuelConstants.RIGHT_INTAKE_LAUNCHER_MOTOR_ID;
 
-import edu.wpi.first.wpilibj.motorcontrol.Spark;
+import com.ctre.phoenix6.hardware.TalonFX;
+
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.commands.Launch;
-
-import static frc.robot.Constants.FuelConstants.*;
 
 public class CANFuelSubsystem extends SubsystemBase {
   // private final SparkMax LeftIntakeLauncher;

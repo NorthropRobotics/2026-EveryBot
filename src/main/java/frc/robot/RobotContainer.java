@@ -14,6 +14,8 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -33,17 +35,23 @@ import frc.robot.subsystems.CANFuelSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 public class RobotContainer {
+            public double applyInputShaping(double joystickAxis){
+            double deadband = .15;
+            double exponet = 2;
+            if(Math.abs(joystickAxis) < deadband) return 0;
+            return Math.signum(joystickAxis) * Math.pow((Math.abs(joystickAxis)-deadband)/(1-deadband), exponet);
+        }
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
     /* Setting up bindings for necessary control of the swerve drive platform */
-    // private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-    //         .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
-    //         .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
-            //A Robot Centric Option for Alfy Testing 
-        private final SwerveRequest.RobotCentric drive = new SwerveRequest.RobotCentric()
+    private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
             .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
+            //A Robot Centric Option for Alfy Testing 
+        // private final SwerveRequest.RobotCentric drive = new SwerveRequest.RobotCentric()
+        //     .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
+        //     .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
@@ -72,20 +80,22 @@ public class RobotContainer {
             drivetrain
         );
 
-        Command shootAndDrive = choreoFactory.trajectoryCmd("ShootAndDrive")
-            .beforeStarting(new LaunchSequence(fuelSubsystem));
+        Command backUpAndShoot = Commands.sequence(choreoFactory.resetOdometry("backUp"),
+        choreoFactory.trajectoryCmd("backUp"),
+        Commands.runOnce(() ->  Launch.adjustedSpeed = .75),
+        new LaunchSequence(fuelSubsystem));
 
-        autoChooser.setDefaultOption("Shoot and Drive", shootAndDrive);
+        autoChooser.setDefaultOption("Shoot and Drive", backUpAndShoot);
         SmartDashboard.putData("Auto Chooser", autoChooser);
-
-        // README: Telemetry & Cameras
-        // UsbCamera cam0 = CameraServer.startAutomaticCapture();
-        // UsbCamera cam1 = CameraServer.startAutomaticCapture();
+        SmartDashboard.putNumber("Adjusted Launch Speed", Launch.adjustedSpeed);
+        //README: Telemetry & Cameras
+        UsbCamera cam0 = CameraServer.startAutomaticCapture();
+        UsbCamera cam1 = CameraServer.startAutomaticCapture();
         
-        // cam0.setResolution(320, 240);
-        // cam0.setFPS(15);
-        // cam1.setResolution(320, 240);
-        // cam1.setFPS(15);
+        cam0.setResolution(320, 240);
+        cam0.setFPS(15);
+        cam1.setResolution(320, 240);
+        cam1.setFPS(15);
     }
 
     private void configureBindings() {
@@ -94,8 +104,8 @@ public class RobotContainer {
         drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(-joystick.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-joystick.getLeftX() * MaxSpeed) // Drive left with negative X (left)
+                drive.withVelocityX(-applyInputShaping(joystick.getLeftY()) * MaxSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-applyInputShaping(joystick.getLeftX()) * MaxSpeed) // Drive left with negative X (left)
                     .withRotationalRate(-joystick.getRightX() * MaxAngularRate) // Drive counterclockwise with negative X (left)
             )
         );
@@ -130,6 +140,8 @@ public class RobotContainer {
         joystick.povUp().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = .75));
         joystick.povDown().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = 0.5));
         joystick.povRight().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = 1.0));
+        joystick.rightTrigger().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed =+ .05));
+        joystick.leftTrigger().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed =- .05));
         drivetrain.registerTelemetry(logger::telemeterize);
 
         // Fuel and climber subsystem default commands — stop motors when no button held

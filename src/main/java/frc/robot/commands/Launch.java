@@ -7,6 +7,7 @@ package frc.robot.commands;
 import static frc.robot.Constants.FuelConstants.INDEXER_LAUNCHING_PERCENT;
 import static frc.robot.Constants.FuelConstants.LAUNCHING_LAUNCHER_PERCENT;
 
+import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.CANFuelSubsystem;
@@ -15,8 +16,7 @@ import frc.robot.subsystems.CANFuelSubsystem;
 public class Launch extends Command {
   /** Creates a new Intake. */
 
-  public static double adjustedSpeed = 1.0;
-
+  public static Double adjustedSpeed = 1.0;
   CANFuelSubsystem fuelSubsystem;
 
   public Launch(CANFuelSubsystem fuelSystem) {

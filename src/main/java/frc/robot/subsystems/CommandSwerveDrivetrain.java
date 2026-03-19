@@ -43,10 +43,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private double m_lastSimTime;
 
     /* Choreo path-following PID controllers and request */
-    private final SwerveRequest.ApplyRobotSpeeds m_choreoRequest = new SwerveRequest.ApplyRobotSpeeds();
-    private final PIDController m_choreoX = new PIDController(10, 0, 0);
-    private final PIDController m_choreoY = new PIDController(10, 0, 0);
-    private final PIDController m_choreoTheta = new PIDController(7, 0, 0);
+    private final SwerveRequest.ApplyFieldSpeeds m_choreoRequest = new SwerveRequest.ApplyFieldSpeeds();
+    private final PIDController m_choreoX = new PIDController(7.5, 0, 0);
+    private final PIDController m_choreoY = new PIDController(7.5, 0, 0);
+    private final PIDController m_choreoTheta = new PIDController(10, 0, 0);
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
     private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
