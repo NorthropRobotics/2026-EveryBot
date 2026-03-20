@@ -17,6 +17,7 @@ import choreo.auto.AutoFactory;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -70,7 +71,7 @@ public class RobotContainer {
 
     public RobotContainer() {
         configureBindings();
-
+        SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
         // README: Autonomous
         var choreoFactory = new AutoFactory(
             drivetrain::getPose,
@@ -83,6 +84,7 @@ public class RobotContainer {
         Command backUpAndShoot = Commands.sequence(choreoFactory.resetOdometry("backUp"),
         choreoFactory.trajectoryCmd("backUp"),
         Commands.runOnce(() ->  Launch.adjustedSpeed = .75),
+        Commands.parallel((new LaunchSequence(fuelSubsystem)), drivetrain.applyRequest(() -> brake)),
         new LaunchSequence(fuelSubsystem));
 
         autoChooser.setDefaultOption("Shoot and Drive", backUpAndShoot);
