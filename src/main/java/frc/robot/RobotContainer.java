@@ -10,6 +10,8 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static frc.robot.Constants.OperatorConstants.DRIVER_CONTROLLER_PORT;
 import static frc.robot.Constants.OperatorConstants.OPERATOR_CONTROLLER_PORT;
 
+import java.util.Optional;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -18,6 +20,7 @@ import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -45,14 +48,15 @@ public class RobotContainer {
     private double MaxSpeed = 1.0 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
+
     /* Setting up bindings for necessary control of the swerve drive platform */
-    // private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
-    //         .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
-    //         .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
-            //A Robot Centric Option for Alfy Testing 
-        private final SwerveRequest.RobotCentric drive = new SwerveRequest.RobotCentric()
+    private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
             .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
+            //A Robot Centric Option for Alfy Testing 
+        // private final SwerveRequest.RobotCentric drive = new SwerveRequest.RobotCentric()
+        //     .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
+        //     .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
     private final SwerveRequest.SwerveDriveBrake brake = new SwerveRequest.SwerveDriveBrake();
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
 
@@ -83,29 +87,28 @@ public class RobotContainer {
         //Hub Basic auto
         Command backUpAndShoot = Commands.sequence(choreoFactory.resetOdometry("backUp"),
         choreoFactory.trajectoryCmd("backUpHub"),
-        Commands.runOnce(() ->  Launch.adjustedSpeed = .75),
+        Commands.runOnce(() ->  Launch.adjustedSpeed = .70),
         Commands.parallel((new LaunchSequence(fuelSubsystem)), drivetrain.applyRequest(() -> brake)),
         new LaunchSequence(fuelSubsystem));
 
         //Depot Basic Auto
         Command backUpAndShootDepot = Commands.sequence(choreoFactory.resetOdometry("BackUpDepot"),
         choreoFactory.trajectoryCmd("BackUpDepot"),
-        Commands.runOnce(() ->  Launch.adjustedSpeed = .75),
+        Commands.runOnce(() ->  Launch.adjustedSpeed = .70),
         Commands.parallel((new LaunchSequence(fuelSubsystem)), drivetrain.applyRequest(() -> brake)),
         new LaunchSequence(fuelSubsystem));
 
         //Outpost Basic Auto
         Command backUpAndShootOutpost = Commands.sequence(choreoFactory.resetOdometry("BackUpOutpost"),
         choreoFactory.trajectoryCmd("BackUpOutpost"),
-        Commands.runOnce(() ->  Launch.adjustedSpeed = .75),
+        Commands.runOnce(() ->  Launch.adjustedSpeed = .70),
         Commands.parallel((new LaunchSequence(fuelSubsystem)), drivetrain.applyRequest(() -> brake)),
         new LaunchSequence(fuelSubsystem));
 
-        autoChooser.setDefaultOption("Shoot and Drive", backUpAndShoot);
+        autoChooser.setDefaultOption("Basic Hub", backUpAndShoot);
         autoChooser.addOption("Basic Outpost", backUpAndShootOutpost);
         autoChooser.addOption("Basic Depot", backUpAndShootDepot);
         SmartDashboard.putData("Auto Chooser", autoChooser);
-        SmartDashboard.putNumber("Adjusted Launch Speed", Launch.adjustedSpeed);
         //README: Telemetry & Cameras
         UsbCamera cam0 = CameraServer.startAutomaticCapture();
         UsbCamera cam1 = CameraServer.startAutomaticCapture();
