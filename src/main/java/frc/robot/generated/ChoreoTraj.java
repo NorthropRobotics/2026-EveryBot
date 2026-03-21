@@ -24,12 +24,26 @@ public record ChoreoTraj(
     Pose2d initialPoseBlue,
     Pose2d endPoseBlue
 ) {
-    public static final ChoreoTraj backUp = new ChoreoTraj(
-        "backUp",
+    public static final ChoreoTraj backUpHub = new ChoreoTraj(
+        "backUpHub",
         OptionalInt.empty(),
         0.95965,
         new Pose2d(3.55392, 4.05019, Rotation2d.fromRadians(3.14159)),
         new Pose2d(2.2286, 4.06968, Rotation2d.fromRadians(3.14159))
+    );
+    public static final ChoreoTraj BackUpDepot = new ChoreoTraj(
+        "BackUpDepot",
+        OptionalInt.empty(),
+        0.97608,
+        new Pose2d(3.63188, 7.38688, Rotation2d.fromRadians(3.14159)),
+        new Pose2d(2.6184, 6.45136, Rotation2d.fromRadians(2.26893))
+    );
+    public static final ChoreoTraj BackUpOutpost = new ChoreoTraj(
+        "BackUpOutpost",
+        OptionalInt.empty(),
+        1.09293,
+        new Pose2d(3.63188, 0.60436, Rotation2d.fromRadians(3.14159)),
+        new Pose2d(2.15064, 1.52039, Rotation2d.fromRadians(-2.35619))
     );
 
     /**
@@ -37,7 +51,9 @@ public record ChoreoTraj(
      * This allows for trajectory data to be looked up with strings during runtime.
      */
     public static final Map<String, ChoreoTraj> ALL_TRAJECTORIES = Map.ofEntries(
-        Map.entry("backUp", backUp)
+        Map.entry("backUpHub", backUpHub),
+        Map.entry("BackUpDepot", BackUpDepot),
+        Map.entry("BackUpOutpost", BackUpOutpost)
     );
 
     /**
