@@ -80,14 +80,30 @@ public class RobotContainer {
             true,
             drivetrain
         );
-
+        //Hub Basic auto
         Command backUpAndShoot = Commands.sequence(choreoFactory.resetOdometry("backUp"),
-        choreoFactory.trajectoryCmd("backUp"),
+        choreoFactory.trajectoryCmd("backUpHub"),
+        Commands.runOnce(() ->  Launch.adjustedSpeed = .75),
+        Commands.parallel((new LaunchSequence(fuelSubsystem)), drivetrain.applyRequest(() -> brake)),
+        new LaunchSequence(fuelSubsystem));
+
+        //Depot Basic Auto
+        Command backUpAndShootDepot = Commands.sequence(choreoFactory.resetOdometry("BackUpDepot"),
+        choreoFactory.trajectoryCmd("BackUpDepot"),
+        Commands.runOnce(() ->  Launch.adjustedSpeed = .75),
+        Commands.parallel((new LaunchSequence(fuelSubsystem)), drivetrain.applyRequest(() -> brake)),
+        new LaunchSequence(fuelSubsystem));
+
+        //Outpost Basic Auto
+        Command backUpAndShootOutpost = Commands.sequence(choreoFactory.resetOdometry("BackUpOutpost"),
+        choreoFactory.trajectoryCmd("BackUpOutpost"),
         Commands.runOnce(() ->  Launch.adjustedSpeed = .75),
         Commands.parallel((new LaunchSequence(fuelSubsystem)), drivetrain.applyRequest(() -> brake)),
         new LaunchSequence(fuelSubsystem));
 
         autoChooser.setDefaultOption("Shoot and Drive", backUpAndShoot);
+        autoChooser.addOption("Basic Outpost", backUpAndShootOutpost);
+        autoChooser.addOption("Basic Depot", backUpAndShootDepot);
         SmartDashboard.putData("Auto Chooser", autoChooser);
         SmartDashboard.putNumber("Adjusted Launch Speed", Launch.adjustedSpeed);
         //README: Telemetry & Cameras
@@ -140,7 +156,7 @@ public class RobotContainer {
         joystick.x().whileTrue(new Eject(fuelSubsystem));
         joystick.povLeft().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = 0.2));
         joystick.povUp().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = .75));
-        joystick.povDown().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = 0.5));
+        joystick.povDown().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = 0.87));
         joystick.povRight().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = 1.0));
         joystick.rightTrigger().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed =+ .05));
         joystick.leftTrigger().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed =- .05));
