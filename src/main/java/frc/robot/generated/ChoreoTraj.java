@@ -27,23 +27,23 @@ public record ChoreoTraj(
     public static final ChoreoTraj BackUpDepot = new ChoreoTraj(
         "BackUpDepot",
         OptionalInt.empty(),
-        1.02138,
-        new Pose2d(3.63188, 7.38688, Rotation2d.fromRadians(0)),
-        new Pose2d(2.6184, 6.45136, Rotation2d.fromRadians(2.26893))
+        0.94519,
+        new Pose2d(3.63188, 7.38688, Rotation2d.fromRadians(2.26893)),
+        new Pose2d(2.38452, 7.07504, Rotation2d.fromRadians(2.26893))
     );
     public static final ChoreoTraj backUpHub = new ChoreoTraj(
         "backUpHub",
         OptionalInt.empty(),
-        1.17507,
-        new Pose2d(3.61239, 4.08917, Rotation2d.fromRadians(0)),
-        new Pose2d(2.2286, 4.06968, Rotation2d.fromRadians(-3.14159))
+        0.97055,
+        new Pose2d(3.61239, 4.08917, Rotation2d.fromRadians(3.14159)),
+        new Pose2d(2.2286, 4.08917, Rotation2d.fromRadians(3.14159))
     );
     public static final ChoreoTraj BackUpOutpost = new ChoreoTraj(
         "BackUpOutpost",
         OptionalInt.empty(),
-        1.12955,
-        new Pose2d(3.63188, 0.60436, Rotation2d.fromRadians(0)),
-        new Pose2d(2.15064, 1.52039, Rotation2d.fromRadians(-2.35619))
+        1.09891,
+        new Pose2d(3.61239, 0.7213, Rotation2d.fromRadians(-2.35619)),
+        new Pose2d(2.0337, 1.48141, Rotation2d.fromRadians(-2.35619))
     );
 
     /**
