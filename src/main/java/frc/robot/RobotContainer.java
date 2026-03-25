@@ -13,6 +13,7 @@ import static frc.robot.Constants.OperatorConstants.OPERATOR_CONTROLLER_PORT;
 import java.util.Optional;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.revrobotics.encoder.DetachedEncoder.PeriodicStatus0;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
@@ -21,6 +22,7 @@ import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -28,6 +30,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import frc.robot.commands.ClimbDown;
 import frc.robot.commands.ClimbUp;
 import frc.robot.commands.Eject;
@@ -38,6 +42,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CANFuelSubsystem;
 import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+@SuppressWarnings("unused")
 public class RobotContainer {
             public double applyInputShaping(double joystickAxis){
             double deadband = .15;
@@ -72,10 +77,14 @@ public class RobotContainer {
 
     // README: Autonomous
     private final SendableChooser<Command> autoChooser = new SendableChooser<>();
-
-    public RobotContainer() {
+    
+        public RobotContainer() {
         configureBindings();
         SmartDashboard.putNumber("Match Time", DriverStation.getMatchTime());
+        try (Field2d m_field = new Field2d()) {
+            SmartDashboard.putData("Field", m_field);
+        }
+        
         // README: Autonomous
         var choreoFactory = new AutoFactory(
             drivetrain::getPose,
