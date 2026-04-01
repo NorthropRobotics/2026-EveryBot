@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.commands.Launch;
 
+@SuppressWarnings("unused")
 public class CANFuelSubsystem extends SubsystemBase {
   // private final SparkMax LeftIntakeLauncher;
   // private final SparkMax RightIntakeLauncher;

@@ -32,15 +32,15 @@ import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
-import frc.robot.commands.ClimbDown;
-import frc.robot.commands.ClimbUp;
+// import frc.robot.commands.ClimbDown;
+// import frc.robot.commands.ClimbUp;
 import frc.robot.commands.Eject;
 import frc.robot.commands.Intake;
 import frc.robot.commands.Launch;
 import frc.robot.commands.LaunchSequence;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CANFuelSubsystem;
-import frc.robot.subsystems.ClimberSubsystem;
+// import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 @SuppressWarnings("unused")
 public class RobotContainer {
@@ -68,12 +68,12 @@ public class RobotContainer {
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
     private final CommandXboxController joystick = new CommandXboxController(DRIVER_CONTROLLER_PORT);
-    // private final CommandXboxController operatorController = new CommandXboxController(OPERATOR_CONTROLLER_PORT);
+    private final CommandXboxController operatorController = new CommandXboxController(OPERATOR_CONTROLLER_PORT);
 
     // README: Subsystems
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     private final CANFuelSubsystem fuelSubsystem = new CANFuelSubsystem();
-    private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
+    //private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
 
     // README: Autonomous
     private final SendableChooser<Command> autoChooser = new SendableChooser<>();
@@ -182,20 +182,20 @@ public class RobotContainer {
 
         // Fuel and climber subsystem default commands — stop motors when no button held
         fuelSubsystem.setDefaultCommand(fuelSubsystem.run(() -> fuelSubsystem.stop()));
-        climberSubsystem.setDefaultCommand(climberSubsystem.run(() -> climberSubsystem.stop()));
+        // climberSubsystem.setDefaultCommand(climberSubsystem.run(() -> climberSubsystem.stop()));
 
         // README: Controller Bindings > Operator Controller
-        // operatorController.y().whileTrue(new Intake(fuelSubsystem));
-        // operatorController.rightBumper().whileTrue(new LaunchSequence(fuelSubsystem));
-        // operatorController.x().whileTrue(new Eject(fuelSubsystem));
-        // //operatorController.povLeft().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = 0.2));
-        // operatorController.a().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = .75));
-        // //operatorController.povDown().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = 0.87));
-        // operatorController.b().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = 1.0));
-        // operatorController.rightTrigger().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = Launch.adjustedSpeed+.05));
-        // operatorController.leftTrigger().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = Launch.adjustedSpeed-.05));
-        // operatorController.povLeft().whileTrue(drivetrain.applyRequest(() -> drive.withRotationalRate(-operatorController.getRightX() * MaxAngularRate)));
-        // operatorController.povRight().whileTrue(drivetrain.applyRequest(() -> drive.withRotationalRate(-operatorController.getRightX() * MaxAngularRate)));
+        operatorController.y().whileTrue(new Intake(fuelSubsystem));
+        operatorController.rightBumper().whileTrue(new LaunchSequence(fuelSubsystem));
+        operatorController.x().whileTrue(new Eject(fuelSubsystem));
+        //operatorController.povLeft().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = 0.2));
+        operatorController.a().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = .75));
+        //operatorController.povDown().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = 0.87));
+        operatorController.b().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = 1.0));
+        operatorController.rightTrigger().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = Launch.adjustedSpeed+.05));
+        operatorController.leftTrigger().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = Launch.adjustedSpeed-.05));
+        operatorController.povLeft().whileTrue(drivetrain.applyRequest(() -> drive.withRotationalRate(-operatorController.getRightX() * MaxAngularRate)));
+        operatorController.povRight().whileTrue(drivetrain.applyRequest(() -> drive.withRotationalRate(-operatorController.getRightX() * MaxAngularRate)));
     }   
 
     public Command getAutonomousCommand() {

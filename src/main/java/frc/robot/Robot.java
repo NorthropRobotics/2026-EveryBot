@@ -23,6 +23,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.Launch;
 
 // README: Subsystems > AdvantageKit Logging
+@SuppressWarnings("unused")
 public class Robot extends LoggedRobot {
     private Command m_autonomousCommand;
 
