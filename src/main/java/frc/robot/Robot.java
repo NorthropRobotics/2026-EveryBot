@@ -90,6 +90,8 @@ public class Robot extends LoggedRobot {
 
     @Override
     public void teleopPeriodic() {
+      System.out.println(m_robotContainer.getTargetRotation());
+      
        {
 
     alliance = DriverStation.getAlliance();

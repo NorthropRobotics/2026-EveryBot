@@ -13,7 +13,9 @@ import static frc.robot.Constants.OperatorConstants.OPERATOR_CONTROLLER_PORT;
 import java.util.Optional;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
 import com.revrobotics.encoder.DetachedEncoder.PeriodicStatus0;
+import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import choreo.auto.AutoFactory;
@@ -28,6 +30,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -58,6 +61,10 @@ public class RobotContainer {
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
             .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage); // Use open-loop control for drive motors
+        private final SwerveRequest.FieldCentricFacingAngle operatorRequest = new FieldCentricFacingAngle()
+        .withHeadingPID(10,0,0)
+        .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
+            .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
             //A Robot Centric Option for Alfy Testing 
         // private final SwerveRequest.RobotCentric drive = new SwerveRequest.RobotCentric()
         //     .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
@@ -68,7 +75,7 @@ public class RobotContainer {
     private final Telemetry logger = new Telemetry(MaxSpeed);
 
     private final CommandXboxController joystick = new CommandXboxController(DRIVER_CONTROLLER_PORT);
-    private final CommandXboxController operatorController = new CommandXboxController(OPERATOR_CONTROLLER_PORT);
+    private final CommandJoystick operatorStick = new CommandJoystick(OPERATOR_CONTROLLER_PORT);
 
     // README: Subsystems
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
@@ -119,6 +126,8 @@ public class RobotContainer {
         autoChooser.addOption("Basic Depot", backUpAndShootDepot);
         SmartDashboard.putData("Auto Chooser", autoChooser);
         //README: Telemetry & Cameras
+        // Check if this is a simulation. If yes, don't run camera init code
+        if(!Utils.isSimulation()){
         UsbCamera cam0 = CameraServer.startAutomaticCapture();
         UsbCamera cam1 = CameraServer.startAutomaticCapture();
         
@@ -126,6 +135,7 @@ public class RobotContainer {
         cam0.setFPS(15);
         cam1.setResolution(320, 240);
         cam1.setFPS(15);
+        }
     }
 
     private void configureBindings() {
@@ -185,19 +195,21 @@ public class RobotContainer {
         // climberSubsystem.setDefaultCommand(climberSubsystem.run(() -> climberSubsystem.stop()));
 
         // README: Controller Bindings > Operator Controller
-        operatorController.y().whileTrue(new Intake(fuelSubsystem));
-        operatorController.rightBumper().whileTrue(new LaunchSequence(fuelSubsystem));
-        operatorController.x().whileTrue(new Eject(fuelSubsystem));
-        //operatorController.povLeft().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = 0.2));
-        operatorController.a().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = .75));
-        //operatorController.povDown().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = 0.87));
-        operatorController.b().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = 1.0));
-        operatorController.rightTrigger().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = Launch.adjustedSpeed+.05));
-        operatorController.leftTrigger().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = Launch.adjustedSpeed-.05));
-        operatorController.povLeft().whileTrue(drivetrain.applyRequest(() -> drive.withRotationalRate(-operatorController.getRightX() * MaxAngularRate)));
-        operatorController.povRight().whileTrue(drivetrain.applyRequest(() -> drive.withRotationalRate(-operatorController.getRightX() * MaxAngularRate)));
+        operatorStick.button(19).whileTrue(new Intake(fuelSubsystem));
+        operatorStick.button(18).whileTrue(new LaunchSequence(fuelSubsystem));
+        operatorStick.button(16).whileTrue(new Eject(fuelSubsystem));
+        //operatorStick.povLeft().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = 0.2));
+        operatorStick.button(3).onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = .75));
+        //operatorStick.povDown().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = 0.87));
+        operatorStick.button(1).onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = 1.0));
+        operatorStick.button(2).onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = Launch.adjustedSpeed+.05));
+        operatorStick.button(4).onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = Launch.adjustedSpeed-.05));
+        operatorStick.button(9).whileTrue(drivetrain.applyRequest(() -> operatorRequest.withTargetDirection(getTargetRotation()).withVelocityX(-applyInputShaping(joystick.getLeftY()) * MaxSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-applyInputShaping(joystick.getLeftX()) * MaxSpeed)));
     }   
-
+public Rotation2d getTargetRotation(){
+return new Rotation2d(-Math.atan2(operatorStick.getRawAxis(1),operatorStick.getRawAxis(0))+Math.PI/2);
+}
     public Command getAutonomousCommand() {
         return autoChooser.getSelected();
     }
