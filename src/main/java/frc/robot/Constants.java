@@ -27,6 +27,10 @@ public final class Constants {
   // README: Subsystems > CANFuelSubsystem | Configuration & Tuning > FuelConstants
   public static final class FuelConstants {
     // Motor controller IDs for Fuel Mechanism motors
+    public static final double HUB_X_COORD = 4.625594;
+    public static final double HUB_Y_COORD = 4.03352;
+    public static final double FULL_FIELD_X = 16.5409;
+    public static final double FULL_FIELD_Y = 8.0693;
     public static final int LEFT_INTAKE_LAUNCHER_MOTOR_ID = 16;
     public static final int RIGHT_INTAKE_LAUNCHER_MOTOR_ID = 15;
     public static final int INDEXER_MOTOR_ID = 13; // labeled feeder

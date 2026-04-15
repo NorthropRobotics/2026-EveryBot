@@ -28,12 +28,17 @@ public class Launch extends Command {
   // Called when the command is initially scheduled. Set the rollers to the
   // appropriate values for intaking
   @Override
-  public void initialize() {
-    fuelSubsystem
+  public void initialize() {if(adjustedSpeed<=1){
+    fuelSubsystem 
         .setIntakeLauncherRoller(
             adjustedSpeed * SmartDashboard.getNumber("Launching launcher roller value", LAUNCHING_LAUNCHER_PERCENT));
     fuelSubsystem.setFeederRoller(SmartDashboard.getNumber("Launching feeder roller value", INDEXER_LAUNCHING_PERCENT));
-  }
+  } else {
+    fuelSubsystem 
+        .setIntakeLauncherRoller(
+            1 * SmartDashboard.getNumber("Launching launcher roller value", LAUNCHING_LAUNCHER_PERCENT));
+    fuelSubsystem.setFeederRoller(SmartDashboard.getNumber("Launching feeder roller value", INDEXER_LAUNCHING_PERCENT));
+  }}
 
   // Called every time the scheduler runs while the command is scheduled. This
   // command doesn't require updating any values while running

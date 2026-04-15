@@ -14,6 +14,7 @@ import java.util.Optional;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest.FieldCentricFacingAngle;
+import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 import com.revrobotics.encoder.DetachedEncoder.PeriodicStatus0;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveRequest;
@@ -29,22 +30,28 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
+import frc.robot.Util.Targeting;
 // import frc.robot.commands.ClimbDown;
 // import frc.robot.commands.ClimbUp;
 import frc.robot.commands.Eject;
 import frc.robot.commands.Intake;
 import frc.robot.commands.Launch;
 import frc.robot.commands.LaunchSequence;
+import frc.robot.commands.SpinUp;
+import frc.robot.Util.Targeting;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CANFuelSubsystem;
 // import frc.robot.subsystems.ClimberSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.Vision;
 @SuppressWarnings("unused")
 public class RobotContainer {
             public double applyInputShaping(double joystickAxis){
@@ -65,6 +72,14 @@ public class RobotContainer {
         .withHeadingPID(10,0,0)
         .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
             .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+
+        public final SwerveRequest.FieldCentricFacingAngle targetHub = new SwerveRequest.FieldCentricFacingAngle()
+                        .withHeadingPID(10, 0, 0)
+                        // Add a 10% deadband
+                        .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1)
+                        .withDriveRequestType(DriveRequestType.Velocity)
+                        // Flip perspective (angle and velocity) when on red
+                        .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective);
             //A Robot Centric Option for Alfy Testing 
         // private final SwerveRequest.RobotCentric drive = new SwerveRequest.RobotCentric()
         //     .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
@@ -80,6 +95,9 @@ public class RobotContainer {
     // README: Subsystems
     public final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
     private final CANFuelSubsystem fuelSubsystem = new CANFuelSubsystem();
+    
+    private final Vision vision = new Vision(drivetrain);
+    
     //private final ClimberSubsystem climberSubsystem = new ClimberSubsystem();
 
     // README: Autonomous
@@ -101,25 +119,34 @@ public class RobotContainer {
             drivetrain
         );
         //Hub Basic auto
-        Command backUpAndShoot = Commands.sequence(choreoFactory.resetOdometry("backUp"),
+        Command backUpAndShoot = Commands.sequence(choreoFactory.resetOdometry("backUpHub"),
         choreoFactory.trajectoryCmd("backUpHub"),
-        Commands.runOnce(() ->  Launch.adjustedSpeed = .75),
+        Commands.runOnce(() ->  Launch.adjustedSpeed = 0.8),
         Commands.parallel((new LaunchSequence(fuelSubsystem)), drivetrain.applyRequest(() -> brake)),
         new LaunchSequence(fuelSubsystem));
 
         //Depot Basic Auto
         Command backUpAndShootDepot = Commands.sequence(choreoFactory.resetOdometry("BackUpDepot"),
         choreoFactory.trajectoryCmd("BackUpDepot"),
-        Commands.runOnce(() ->  Launch.adjustedSpeed = .70),
+        Commands.runOnce(() ->  Launch.adjustedSpeed = .80),
         Commands.parallel((new LaunchSequence(fuelSubsystem)), drivetrain.applyRequest(() -> brake)),
         new LaunchSequence(fuelSubsystem));
 
         //Outpost Basic Auto
         Command backUpAndShootOutpost = Commands.sequence(choreoFactory.resetOdometry("BackUpOutpost"),
         choreoFactory.trajectoryCmd("BackUpOutpost"),
-        Commands.runOnce(() ->  Launch.adjustedSpeed = .70),
+        Commands.runOnce(() ->  Launch.adjustedSpeed = .80),
         Commands.parallel((new LaunchSequence(fuelSubsystem)), drivetrain.applyRequest(() -> brake)),
         new LaunchSequence(fuelSubsystem));
+
+        //Hub Sweep Auto
+        // Command HubSweep = Commands.sequence(choreoFactory.resetOdometry("backUpHub"),
+        // Commands.parallel(
+        //     choreoFactory.trajectoryCmd("backUpHub"),
+        //     Commands.sequence(
+        //         Commands.runOnce(() ->  Launch.adjustedSpeed = 0.8),
+        //         Commands.parallel((new SpinUp(fuelSubsystem)),))))
+
 
         autoChooser.setDefaultOption("Basic Hub", backUpAndShoot);
         autoChooser.addOption("Basic Outpost", backUpAndShootOutpost);
@@ -177,7 +204,12 @@ public class RobotContainer {
         joystick.start().and(joystick.x()).whileTrue(drivetrain.sysIdQuasistatic(Direction.kReverse));
 
         // Reset the field-centric heading on left bumper press.
-        joystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
+                        // zero gyro yaw on right bumper press
+        joystick.leftBumper().onTrue(drivetrain.runOnce(() ->
+        // get alliance and make sure it exists
+        DriverStation.getAlliance().ifPresent((alliance) ->
+        // set gyro to 0 if blue, 180 if red
+        drivetrain.getPigeon2().setYaw(alliance == Alliance.Blue ? 0 : 180))));
         // Options to have all controls on the driver contoller. Comment out if using two
         joystick.y().whileTrue(new Intake(fuelSubsystem));
         joystick.rightBumper().whileTrue(new LaunchSequence(fuelSubsystem));
@@ -195,7 +227,7 @@ public class RobotContainer {
         // climberSubsystem.setDefaultCommand(climberSubsystem.run(() -> climberSubsystem.stop()));
 
         // README: Controller Bindings > Operator Controller
-        operatorStick.button(19).whileTrue(new Intake(fuelSubsystem));
+        operatorStick.button(17).whileTrue(new Intake(fuelSubsystem));
         operatorStick.button(18).whileTrue(new LaunchSequence(fuelSubsystem));
         operatorStick.button(16).whileTrue(new Eject(fuelSubsystem));
         //operatorStick.povLeft().onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = 0.2));
@@ -204,6 +236,13 @@ public class RobotContainer {
         operatorStick.button(1).onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = 1.0));
         operatorStick.button(2).onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = Launch.adjustedSpeed+.05));
         operatorStick.button(4).onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = Launch.adjustedSpeed-.05));
+        operatorStick.button(12).whileTrue(Commands.run(() ->  Launch.adjustedSpeed = ((SmartDashboard.getNumber("Distance", 1))*0.116)+.513));
+        operatorStick.button(10).whileTrue(drivetrain.applyRequest( () -> {return targetHub.withTargetDirection(
+        Targeting.getTargetRotation(drivetrain.getPose()))
+        .withVelocityX(-applyInputShaping(joystick.getLeftY()) * MaxSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-applyInputShaping(joystick.getLeftX()) * MaxSpeed);})
+    );
+
         operatorStick.button(9).whileTrue(drivetrain.applyRequest(() -> operatorRequest.withTargetDirection(getTargetRotation()).withVelocityX(-applyInputShaping(joystick.getLeftY()) * MaxSpeed) // Drive forward with negative Y (forward)
                     .withVelocityY(-applyInputShaping(joystick.getLeftX()) * MaxSpeed)));
     }   

@@ -216,11 +216,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public void followTrajectory(SwerveSample sample) {
         m_choreoTheta.enableContinuousInput(-Math.PI, Math.PI);
         Pose2d pose = getPose();
-        ChassisSpeeds speeds = ChassisSpeeds.fromFieldRelativeSpeeds(
+        ChassisSpeeds speeds = new ChassisSpeeds(
             sample.vx + m_choreoX.calculate(pose.getX(), sample.x),
             sample.vy + m_choreoY.calculate(pose.getY(), sample.y),
-            sample.omega + m_choreoTheta.calculate(pose.getRotation().getRadians(), sample.heading),
-            pose.getRotation()
+            sample.omega + m_choreoTheta.calculate(pose.getRotation().getRadians(), sample.heading)
+           
         );
         setControl(m_choreoRequest.withSpeeds(speeds));
     }
