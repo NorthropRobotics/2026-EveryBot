@@ -60,5 +60,7 @@
     {"t":0.97055, "x":2.2286, "y":4.08917, "heading":3.14159, "vx":0.0, "vy":0.0, "omega":0.0, "ax":0.0, "ay":0.0, "alpha":0.0, "fx":[0.0,0.0,0.0,0.0], "fy":[0.0,0.0,0.0,0.0]}],
   "splits":[0]
  },
- "events":[]
+ "events":[
+   {"name":"Shoot", "from":{"target":1, "targetTimestamp":0.97055, "offset":{"exp":"-0.5 s", "val":-0.5}}, "event":null},
+   {"name":"Print", "from":{"target":1, "targetTimestamp":0.97055, "offset":{"exp":"0 s", "val":0.0}}, "event":{"type":"named", "data":{"name":"Print"}}}]
 }

@@ -11,6 +11,9 @@ import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
+
+import com.google.errorprone.annotations.Var;
+
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -20,8 +23,10 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.Commands;
 import frc.robot.Util.Targeting;
 import frc.robot.commands.Launch;
+import frc.robot.commands.LaunchSequence;
 
 // README: Subsystems > AdvantageKit Logging
 @SuppressWarnings("unused")
@@ -78,8 +83,11 @@ public class Robot extends LoggedRobot {
     }
 
     @Override
-    public void autonomousPeriodic() {}
-
+    public void autonomousPeriodic() {
+      Launch.adjustedSpeed = (((SmartDashboard.getNumber("Distance", 1))*0.116)+.513);
+      SmartDashboard.putNumber("Adjusted Launch Speed", Launch.adjustedSpeed);
+    }
+    
     @Override
     public void autonomousExit() {}
 

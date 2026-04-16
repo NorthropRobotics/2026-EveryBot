@@ -23,6 +23,9 @@ import choreo.auto.AutoFactory;
 import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.Kinematics;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -118,12 +121,13 @@ public class RobotContainer {
             true,
             drivetrain
         );
+        choreoFactory.bind("Shoot", (new LaunchSequence(fuelSubsystem)));
+        choreoFactory.bind("Print", Commands.runOnce(() -> System.out.println("Hello, World!")));
         //Hub Basic auto
         Command backUpAndShoot = Commands.sequence(choreoFactory.resetOdometry("backUpHub"),
-        choreoFactory.trajectoryCmd("backUpHub"),
-        Commands.runOnce(() ->  Launch.adjustedSpeed = 0.8),
-        Commands.parallel((new LaunchSequence(fuelSubsystem)), drivetrain.applyRequest(() -> brake)),
-        new LaunchSequence(fuelSubsystem));
+        choreoFactory.trajectoryCmd("backUpHub")
+
+        );
 
         //Depot Basic Auto
         Command backUpAndShootDepot = Commands.sequence(choreoFactory.resetOdometry("BackUpDepot"),
@@ -154,15 +158,15 @@ public class RobotContainer {
         SmartDashboard.putData("Auto Chooser", autoChooser);
         //README: Telemetry & Cameras
         // Check if this is a simulation. If yes, don't run camera init code
-        if(!Utils.isSimulation()){
-        UsbCamera cam0 = CameraServer.startAutomaticCapture();
-        UsbCamera cam1 = CameraServer.startAutomaticCapture();
+        // if(!Utils.isSimulation()){
+        // UsbCamera cam0 = CameraServer.startAutomaticCapture();
+        // UsbCamera cam1 = CameraServer.startAutomaticCapture();
         
-        cam0.setResolution(320, 240);
-        cam0.setFPS(15);
-        cam1.setResolution(320, 240);
-        cam1.setFPS(15);
-        }
+        // cam0.setResolution(320, 240);
+        // cam0.setFPS(15);
+        // cam1.setResolution(320, 240);
+        // cam1.setFPS(15);
+        // }
     }
 
     private void configureBindings() {
@@ -190,15 +194,7 @@ public class RobotContainer {
             drivetrain.applyRequest(() -> idle).ignoringDisable(true)
         );
 
-            public void driveRobotRelative(double vx, double vy, double omega) {
-                ChassisSpeeds speeds = new ChassisSpeeds(vx, vy, omega);
-                SwerveModuleState[] states = kinematics.toSwerveModuleStates(speeds);
-
-    frontLeft.setDesiredState(states[0]);
-    frontRight.setDesiredState(states[1]);
-    backLeft.setDesiredState(states[2]);
-    backRight.setDesiredState(states[3]);
-}
+            
         // README: Controller Bindings > Driver Controller
         joystick.a().whileTrue(drivetrain.applyRequest(() -> brake));
         joystick.b().whileTrue(drivetrain.applyRequest(() ->
@@ -245,7 +241,6 @@ public class RobotContainer {
         operatorStick.button(1).onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = 1.0));
         operatorStick.button(2).onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = Launch.adjustedSpeed+.05));
         operatorStick.button(4).onTrue(Commands.runOnce(() ->  Launch.adjustedSpeed = Launch.adjustedSpeed-.05));
-        operatorStick.button(5).whileTrue(Commands.run(() ->  driveRobotRelative(0.0, 0.0, 3.0));
         operatorStick.button(12).whileTrue(Commands.run(() ->  Launch.adjustedSpeed = ((SmartDashboard.getNumber("Distance", 1))*0.116)+.513));
         operatorStick.button(10).whileTrue(drivetrain.applyRequest( () -> {return targetHub.withTargetDirection(
         Targeting.getTargetRotation(drivetrain.getPose()))
